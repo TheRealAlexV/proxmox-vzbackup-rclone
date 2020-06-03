@@ -4,7 +4,7 @@ This is a vzbackup hook script that backups up your proxmox vms, containers and 
 
 rclone is a command line tool that allows you to sync files from your local disk, to a cloud storage device. RClone is most popular with Google Drive but it can be used for other cloud providers. RClone is based off another tool called RSync but with RClone you get so much more functionality built in such as encryption. See https://rclone.org/.
 
-Backups are stored in the rclone remote and organized into YEAR/MONTH/DAY directories to ease the management of the backup files. The backup script also prunes local backups after a configurable amount of days and has an easy to use script to pull old backups from the remote. 
+Backups are stored in the rclone remote and organized into YEAR/MONTH/DAY directories to ease the management of the backup files. The backup script also prunes local backups after a configurable amount of days. The script DOES NOT prune backups stored on the remote. You will need to manage that separately if you do not have unlimited space. There is also an easy to use script to pull old backups from the remote. 
 
 This was built and tested with Google Drive only, however it should work with other providers as well. I recommend Google Drive though because you can get a Google Apps business account for $12 a month which gets you **Unlimited** drive space.
 
