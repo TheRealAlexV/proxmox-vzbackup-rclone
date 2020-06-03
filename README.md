@@ -34,6 +34,57 @@ script:/root/proxmox-vzbackup-rclone/vzbackup-rclone.sh
 
 5. You're finished. Kicking off a manual or scheduled backup will automatically trigger the rclone backup. To verify this, you can kickoff a manual backup and watch the proxmox console log output.
 
+### Example webui console output from a successful vzbackup run:
+
+```
+INFO: starting new backup job: vzdump 121 --compress zstd --node pve-03 --remove 0 --mode snapshot --storage pvebackups01
+INFO: Deleting backups older than 3 days.
+INFO: filesystem type on dumpdir is 'ceph' -using /var/tmp/vzdumptmp1890531 for temporary files
+INFO: Starting Backup of VM 121 (lxc)
+INFO: Backup started at 2020-06-02 20:19:04
+INFO: status = running
+INFO: CT Name: mini-test
+INFO: backup mode: snapshot
+INFO: ionice priority: 7
+INFO: create storage snapshot 'vzdump'
+/dev/rbd12
+INFO: creating archive '/mnt/pve/pvebackups01/dump/vzdump-lxc-121-2020_06_02-20_19_04.tar.zst'
+INFO: Total bytes written: 9021440 (8.7MiB, 6.6MiB/s)
+INFO: archive file size: 2MB
+INFO: Backing up /mnt/pve/pvebackups01/dump/vzdump-lxc-121-2020_06_02-20_19_04.tar.zst to remote storage
+INFO: rcloning /mnt/pve/pvebackups01/dump/rclone/2020/06/02
+INFO: 2020/06/02 20:19:12 INFO  : vzdump-lxc-121-2020_06_02-20_19_04.tar.zst: Copied (new)
+INFO: 2020/06/02 20:19:12 INFO  : 
+INFO: Transferred:   	    2.986M / 2.986 MBytes, 100%, 546.989 kBytes/s, ETA 0s
+INFO: Errors:                 0
+INFO: Checks:                 0 / 0, -
+INFO: Transferred:            1 / 1, 100%
+INFO: Elapsed time:        5.5s
+INFO: remove vzdump snapshot
+Removing snap: 100% complete...done.
+INFO: Finished Backup of VM 121 (00:00:09)
+INFO: Backup finished at 2020-06-02 20:19:13
+INFO: Backing up main PVE configs
+INFO: Tar files
+INFO: Compressing files
+INFO: /var/tmp/proxmox-mqnIdwRD/proxmoxetc.2020-06-02.20.19.13.tar
+INFO: /var/tmp/proxmox-mqnIdwRD/proxmoxpve.2020-06-02.20.19.13.tar
+INFO: /var/tmp/proxmox-mqnIdwRD/proxmoxroot.2020-06-02.20.19.13.tar
+INFO: '/var/tmp/proxmox-mqnIdwRD/proxmox_backup_pve-03_2020-06-02.20.19.13.tar.gz' -> '/mnt/pve/pvebackups01/dump/proxmox_backup_pve-03_2020-06-02.20.19.13.tar.gz'
+INFO: rcloning /var/tmp/proxmox-mqnIdwRD/proxmox_backup_pve-03_2020-06-02.20.19.13.tar.gz
+INFO: 2020/06/02 20:19:17 INFO  : proxmox_backup_pve-03_2020-06-02.20.19.13.tar.gz: Copied (new)
+INFO: 2020/06/02 20:19:17 INFO  : proxmox_backup_pve-03_2020-06-02.20.19.13.tar.gz: Deleted
+INFO: 2020/06/02 20:19:17 INFO  : 
+INFO: Transferred:   	  935.429k / 935.429 kBytes, 100%, 228.905 kBytes/s, ETA 0s
+INFO: Errors:                 0
+INFO: Checks:                 1 / 1, 100%
+INFO: Transferred:            1 / 1, 100%
+INFO: Elapsed time:          4s
+INFO: Cleaning up
+INFO: Backup job finished successfully
+TASK OK
+```
+
 ## Rehydrate (restore) old backups
 
 At some point, it'll be very likely that you'll need to pull old backups from your rclone remote that have been removed from the local proxmox server. This can be done by passing the `rehydrate` parameter to the vzbackup-rclone.sh script:
