@@ -4,9 +4,9 @@ This is a vzbackup hook script that backups up your proxmox vms, containers and 
 
 rclone is a command line tool that allows you to sync files from your local disk, to a cloud storage device. RClone is most popular with Google Drive but it can be used for other cloud providers. RClone is based off another tool called RSync but with RClone you get so much more functionality built in such as encryption. See https://rclone.org/.
 
-Backups are stored in the rclone remote and organized into YEAR/MONTH/DAY directories to ease the managagement of the backup files. The backup script also prunes local backups after a configurable amount of days and has an easy to use script to pull old backups from the remote. 
+Backups are stored in the rclone remote and organized into YEAR/MONTH/DAY directories to ease the management of the backup files. The backup script also prunes local backups after a configurable amount of days and has an easy to use script to pull old backups from the remote. 
 
-This was built and tested with Google Drive only, however it should work with other providers as well. I recomend Google Drive though because you can get a Google Apps business account for $12 a month which gets you **Unlimited** drive space.
+This was built and tested with Google Drive only, however it should work with other providers as well. I recommend Google Drive though because you can get a Google Apps business account for $12 a month which gets you **Unlimited** drive space.
 
 ## Quickstart
 
@@ -17,7 +17,7 @@ Setup an rclone remote and encrypt that remote if so desired. Further informatio
 
 When setting up the encryption, I DO NOT reccomend you encrypt the filenames and directory names. Doing so will break the ability to easily pull down backups from the remmote.
 
-2. SSH or Log into your Proxmox host as root and clone the repo. I recomend you store it in the `/root` dir so that it also gets backed up.
+2. SSH or Log into your Proxmox host as root and clone the repo. I recommend you store it in the `/root` dir so that it also gets backed up.
 ```
 apt-get install git
 cd /root
