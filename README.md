@@ -11,7 +11,7 @@ This was built and tested with Google Drive only, however it should work with ot
 ## Quickstart
 
 1. SSH or Log into your Proxmox host. Install rclone with `apt-get update;apt-get install rclone;`.
-Setup an rclone remote and encrypt that remote if so desired. Further information on configuring rclone can be found here:
+Setup an rclone remote (`rclone config`) and encrypt that remote if so desired. Further information on configuring rclone can be found here:
  - Adding google drive to rclone: https://rclone.org/drive/
  - Encryping your rclone contents: https://rclone.org/crypt/
 
