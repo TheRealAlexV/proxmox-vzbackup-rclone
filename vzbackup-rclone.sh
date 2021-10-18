@@ -19,7 +19,7 @@ rehydrate=${2} #enter the date you want to rehydrate in the following format: YY
 if [ ! -z "${3}" ];then
         CMDARCHIVE=$(echo "/${3}" | sed -e 's/\(.bin\)*$//g')
 fi
-tarfile=${TARFILE}
+tarfile=${TARGET}
 exten=${tarfile#*.}
 filename=${tarfile%.*.*}
 
