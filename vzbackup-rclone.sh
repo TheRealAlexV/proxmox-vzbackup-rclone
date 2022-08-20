@@ -2,8 +2,10 @@
 # ./vzbackup-rclone.sh rehydrate YYYY/MM/DD file_name_encrypted.bin
 
 ############ /START CONFIG
-dumpdir="/mnt/pve/pvebackups01/dump" # Set this to where your vzdump files are stored
+dumpdir="/var/lib/vz/dump" # Set this to where your vzdump files are stored
 MAX_AGE=3 # This is the age in days to keep local backup copies. Local backups older than this are deleted.
+DRIVE_NAME="backup-proxmox" # Set this as drive name in rclone.conf.
+CONFIG_PATH="/root/.config/rclone/rclone.conf"
 ############ /END CONFIG
 
 _bdir="$dumpdir"
@@ -15,7 +17,12 @@ rehydrate=${2} #enter the date you want to rehydrate in the following format: YY
 if [ ! -z "${3}" ];then
         CMDARCHIVE=$(echo "/${3}" | sed -e 's/\(.bin\)*$//g')
 fi
-tarfile=${TARFILE}
+
+if [ -z ${TARGET+x} ]; then 
+    tarfile=${TARFILE}
+else
+    tarfile=${TARGET}
+fi
 exten=${tarfile#*.}
 filename=${tarfile%.*.*}
 
@@ -23,8 +30,8 @@ if [[ ${COMMAND} == 'rehydrate' ]]; then
     #echo "Please enter the date you want to rehydrate in the following format: YYYY/MM/DD"
     #echo "For example, today would be: $timepath"
     #read -p 'Rehydrate Date => ' rehydrate
-    rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M copy gd-backup_crypt:/$rehydrate$CMDARCHIVE $dumpdir \
+    rclone --config ${CONFIG_PATH} \
+    --drive-chunk-size=32M copy $DRIVE_NAME:/$rehydrate$CMDARCHIVE $dumpdir \
     -v --stats=60s --transfers=16 --checkers=16
 fi
 
@@ -39,8 +46,8 @@ if [[ ${COMMAND} == 'backup-end' ]]; then
     #cp -v $tarfile $rclonedir
     echo "rcloning $rclonedir"
     #ls $rclonedir
-    rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M copy $tarfile gd-backup_crypt:/$timepath \
+    rclone --config ${CONFIG_PATH} \
+    --drive-chunk-size=32M copy $tarfile $DRIVE_NAME:/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
 fi
 
@@ -76,8 +83,8 @@ if [[ ${COMMAND} == 'job-end' ||  ${COMMAND} == 'job-abort' ]]; then
     #cp -v $_filename4 $rclonedir/
     echo "rcloning $_filename4"
     #ls $rclonedir
-    rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M move $_filename4 gd-backup_crypt:/$timepath \
+    rclone --config ${CONFIG_PATH} \
+    --drive-chunk-size=32M move $_filename4 $DRIVE_NAME:/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
 
     #rm -rfv $rcloneroot
