@@ -4,6 +4,7 @@
 ############ /START CONFIG
 dumpdir="/mnt/pve/pvebackups01/dump" # Set this to where your vzdump files are stored
 MAX_AGE=3 # This is the age in days to keep local backup copies. Local backups older than this are deleted.
+MAX_CLOUD_AGE=31 # This is the age in days to keep cloud backup copies. Cloud backups older than this are deleted
 ############ /END CONFIG
 
 _bdir="$dumpdir"
@@ -39,10 +40,8 @@ fi
 
 if [[ ${COMMAND} == 'backup-end' ]]; then
     echo "Backing up $tarfile to remote storage"
-    #mkdir -p $rclonedir
-    #cp -v $tarfile $rclonedir
     echo "rcloning $rclonedir"
-    #ls $rclonedir
+    
     rclone --config /root/.config/rclone/rclone.conf \
     --drive-chunk-size=32M copy $tarfile gd-backup_crypt:/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
@@ -75,14 +74,14 @@ if [[ ${COMMAND} == 'job-end' ||  ${COMMAND} == 'job-abort' ]]; then
     tar -cvzPf "$_filename4" $_tdir/*.tar
 
     # copy config archive to backup folder
-    #mkdir -p $rclonedir
     cp -v $_filename4 $_bdir/
-    #cp -v $_filename4 $rclonedir/
+
     echo "rcloning $_filename4"
-    #ls $rclonedir
+
     rclone --config /root/.config/rclone/rclone.conf \
     --drive-chunk-size=32M move $_filename4 gd-backup_crypt:/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
-
-    #rm -rfv $rcloneroot
+    
+    rclone --config /root/.config/rclone/rclone.conf \
+      delete --min-age $MAX_CLOUD_AGEd -vv gd-backup_crypt:backups/
 fi
