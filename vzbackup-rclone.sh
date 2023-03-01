@@ -84,5 +84,5 @@ if [[ ${COMMAND} == 'job-end' ||  ${COMMAND} == 'job-abort' ]]; then
     -v --stats=60s --transfers=16 --checkers=16
 
     rclone --config /root/.config/rclone/rclone.conf \
-      delete --min-age $MAX_CLOUD_AGEd -v $drive:backups/
+      delete --min-age $MAX_CLOUD_AGEd $drive:backups/
 fi
