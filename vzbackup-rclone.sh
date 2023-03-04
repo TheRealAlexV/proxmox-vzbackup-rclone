@@ -10,7 +10,7 @@ MAX_CLOUD_AGE=31 # This is the age in days to keep cloud backup copies. Cloud ba
 
 _bdir="$dumpdir"
 rcloneroot="$dumpdir/rclone"
-timepath="$(date +%Y)/$(date +%m)/$(date +%d)"
+timepath="$(date +%Y-%m-%d)"
 rclonedir="$rcloneroot/$timepath"
 COMMAND=${1}
 rehydrate=${2} #enter the date you want to rehydrate in the following format: YYYY/MM/DD
