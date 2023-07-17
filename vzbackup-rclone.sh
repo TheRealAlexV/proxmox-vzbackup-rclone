@@ -4,6 +4,7 @@
 ############ /START CONFIG
 drive="gd-backup_crypt"
 dumpdir="/mnt/pve/pvebackups01/dump" # Set this to where your vzdump files are stored
+clouddir="backups" # Set this to desired cloud folder
 MAX_AGE=3 # This is the age in days to keep local backup copies. Local backups older than this are deleted.
 MAX_CLOUD_AGE=31 # This is the age in days to keep cloud backup copies. Cloud backups older than this are deleted
 ############ /END CONFIG
@@ -30,13 +31,19 @@ if [[ ${COMMAND} == 'rehydrate' ]]; then
     #echo "For example, today would be: $timepath"
     #read -p 'Rehydrate Date => ' rehydrate
     rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M copy $drive:/$rehydrate$CMDARCHIVE $dumpdir \
+    --drive-chunk-size=32M copy $drive:$backups/$rehydrate$CMDARCHIVE $dumpdir \
     -v --stats=60s --transfers=16 --checkers=16
 fi
 
 if [[ ${COMMAND} == 'job-start' ]]; then
     echo "Deleting backups older than $MAX_AGE days."
-    find $dumpdir -type f -mtime +$MAX_AGE -exec /bin/rm -f {} \;
+    protected=$(find $dumpdir -type f -name *.protected | wc -l)
+    if [ $protected -gt 0 ]; then 
+        echo Found protected files, skipping those
+        find $dumpdir -type f $(printf "! -wholename %s " $(find $dumpdir -type f -name *.protected | sed s/.protected/*/)) -mtime +$MAX_AGE -exec /bin/rm -f {} \;
+    else
+        find $dumpdir -type f -mtime +$MAX_AGE -exec /bin/rm -f {} \;
+    fi
 fi
 
 if [[ ${COMMAND} == 'backup-end' ]]; then
@@ -44,7 +51,7 @@ if [[ ${COMMAND} == 'backup-end' ]]; then
     echo "rcloning $rclonedir"
     
     rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M copy $tarfile $drive:/$timepath \
+    --drive-chunk-size=32M copy $tarfile $drive:$backups/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
 fi
 
@@ -80,9 +87,9 @@ if [[ ${COMMAND} == 'job-end' ||  ${COMMAND} == 'job-abort' ]]; then
     echo "rcloning $_filename4"
 
     rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M move $_filename4 $drive:/$timepath \
+    --drive-chunk-size=32M move $_filename4 $drive:$backups/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
 
     rclone --config /root/.config/rclone/rclone.conf \
-      delete --min-age ${MAX_CLOUD_AGE}d $drive:backups/
+      delete --min-age ${MAX_CLOUD_AGE}d $drive:$backups/
 fi
