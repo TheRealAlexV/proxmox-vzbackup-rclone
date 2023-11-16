@@ -2,20 +2,27 @@
 # ./vzbackup-rclone.sh rehydrate YYYY/MM/DD file_name_encrypted.bin
 
 ############ /START CONFIG
+drive="gd-backup_crypt"
 dumpdir="/mnt/pve/pvebackups01/dump" # Set this to where your vzdump files are stored
+backups="backups" # Set this to desired cloud folder
 MAX_AGE=3 # This is the age in days to keep local backup copies. Local backups older than this are deleted.
+MAX_CLOUD_AGE=31 # This is the age in days to keep cloud backup copies. Cloud backups older than this are deleted
 ############ /END CONFIG
 
 _bdir="$dumpdir"
 rcloneroot="$dumpdir/rclone"
-timepath="$(date +%Y)/$(date +%m)/$(date +%d)"
+timepath="$(date +%Y-%m-%d)"
 rclonedir="$rcloneroot/$timepath"
 COMMAND=${1}
 rehydrate=${2} #enter the date you want to rehydrate in the following format: YYYY/MM/DD
 if [ ! -z "${3}" ];then
         CMDARCHIVE=$(echo "/${3}" | sed -e 's/\(.bin\)*$//g')
 fi
-tarfile=${TARFILE}
+if [ -z ${TARGET+x} ]; then 
+    tarfile=${TARFILE}
+else
+    tarfile=${TARGET}
+fi
 exten=${tarfile#*.}
 filename=${tarfile%.*.*}
 
@@ -24,23 +31,27 @@ if [[ ${COMMAND} == 'rehydrate' ]]; then
     #echo "For example, today would be: $timepath"
     #read -p 'Rehydrate Date => ' rehydrate
     rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M copy gd-backup_crypt:/$rehydrate$CMDARCHIVE $dumpdir \
+    --drive-chunk-size=32M copy $drive:$backups/$rehydrate$CMDARCHIVE $dumpdir \
     -v --stats=60s --transfers=16 --checkers=16
 fi
 
 if [[ ${COMMAND} == 'job-start' ]]; then
     echo "Deleting backups older than $MAX_AGE days."
-    find $dumpdir -type f -mtime +$MAX_AGE -exec /bin/rm -f {} \;
+    protected=$(find $dumpdir -type f -name *.protected | wc -l)
+    if [ $protected -gt 0 ]; then 
+        echo Found protected files, skipping those
+        find $dumpdir -type f $(printf "! -wholename %s " $(find $dumpdir -type f -name *.protected | sed s/.protected/*/)) -mtime +$MAX_AGE -exec /bin/rm -f {} \;
+    else
+        find $dumpdir -type f -mtime +$MAX_AGE -exec /bin/rm -f {} \;
+    fi
 fi
 
 if [[ ${COMMAND} == 'backup-end' ]]; then
     echo "Backing up $tarfile to remote storage"
-    #mkdir -p $rclonedir
-    #cp -v $tarfile $rclonedir
     echo "rcloning $rclonedir"
-    #ls $rclonedir
+    
     rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M copy $tarfile gd-backup_crypt:/$timepath \
+    --drive-chunk-size=32M copy $tarfile $drive:$backups/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
 fi
 
@@ -71,14 +82,14 @@ if [[ ${COMMAND} == 'job-end' ||  ${COMMAND} == 'job-abort' ]]; then
     tar -cvzPf "$_filename4" $_tdir/*.tar
 
     # copy config archive to backup folder
-    #mkdir -p $rclonedir
     cp -v $_filename4 $_bdir/
-    #cp -v $_filename4 $rclonedir/
+
     echo "rcloning $_filename4"
-    #ls $rclonedir
+
     rclone --config /root/.config/rclone/rclone.conf \
-    --drive-chunk-size=32M move $_filename4 gd-backup_crypt:/$timepath \
+    --drive-chunk-size=32M move $_filename4 $drive:$backups/$timepath \
     -v --stats=60s --transfers=16 --checkers=16
 
-    #rm -rfv $rcloneroot
+    rclone --config /root/.config/rclone/rclone.conf \
+      delete --min-age ${MAX_CLOUD_AGE}d $drive:$backups/
 fi

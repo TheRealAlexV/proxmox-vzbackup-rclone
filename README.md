@@ -21,7 +21,7 @@ When setting up the encryption, I DO NOT reccomend you encrypt the filenames and
 ```
 apt-get install git
 cd /root
-git clone https://github.com/TheRealAlexV/proxmox-vzbackup-rclone.git
+git clone https://github.com/Marko298/proxmox-vzbackup-rclone.git
 chmod +x /root/proxmox-vzbackup-rclone/vzbackup-rclone.sh
 ```
 
